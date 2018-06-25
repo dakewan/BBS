@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册页面</title>
+    <link rel="stylesheet" href="/static/plugins/bootstrap-3.3.7/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            background: #bce8f1;
+        }
+    </style>
+</head>
+<body>
+<div class="container" style="margin:250px 300px">
+    <div style="margin-bottom: 80px"><h2 style="text-align:center">blog注册页面</h2></div>
+    <form class="form-horizontal">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="{{ blog_form.title.id_for_label }}"
+                   class="col-sm-2 control-label">{{ blog_form.title.label }}</label>
+            <div class="col-sm-8">
+                {{ blog_form.title }}
+                <span class="help-block">{{ blog_form.title.errors.0 }}</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ blog_form.site.id_for_label }}"
+                   class="col-sm-2 control-label">{{ blog_form.site.label }}</label>
+            <div class="col-sm-8">
+                {{ blog_form.site }}
+                <span class="help-block">{{ blog_form.site.errors.0 }}</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ blog_form.theme.id_for_label }}"
+                   class="col-sm-2 control-label">{{ blog_form.theme.label }}</label>
+            <div class="col-sm-8">
+                {{ blog_form.theme }}
+                <span class="help-block">{{ blog_form.theme.errors.0 }}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <div><span class="login-error btn-danger"></span></div>
+                <button type="button" class="btn btn-default" id="register-button">注册</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="/static/js/jquery-3.3.1.js"></script>
+<script src="/static/plugins/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script>
+
+    $(function () {
+        bindRegister();
+    })
+    function bindRegister() {
+        $("#register-button").click(function () {
+            var data = {};
+            data['title'] = $('[name="title"]').val();
+            data['site'] = $('[name="site"]').val();
+            data['theme'] = $('[name="theme"]').val();
+            data['csrfmiddlewaretoken'] = $('[name="csrfmiddlewaretoken"]').val();
+            console.log(data);
+        $.ajax({
+            url:"/blog-reg/",
+            type:"post",
+            data:data,
+            dataType:'json',
+            success:function (data) {
+                if (!data.status) {
+                    // 没有错误就跳转到指定页面
+                    location.href = data.msg;
+                } else {
+                    // 有错误就展示错误
+                    // console.log(data.msg);
+                    // 将报错信息填写到页面上
+                    $.each(data.msg, function (k, v) {
+                        // console.log("id_"+k, v[0]);
+                        // console.log($("#id_"+k));
+                        $("#id_" + k).next("span").text(v[0]).parent().parent().addClass("has-error");
+                    })
+
+                }
+            }
+        })
+        })
+    }
+    // 将所有的input框绑定获取焦点的事件，将所有的错误信息清空
+    $("form input").focus(function () {
+        $(this).next().text("").parent().parent().removeClass("has-error");
+    });
+
+    // 给username input框绑定一个失去焦点的事件，失去焦点之后就校验用户名是否已被注册
+    {#$("#id_username").blur(function () {#}
+    $("#id_username").on("input", function () {
+        // 取到用户填写的值
+        var username = $(this).val();
+        // 发请求
+        $.ajax({
+            url: "/check_username_exist/",
+            type: "get",
+            data: {"username": username},
+            success: function (data) {
+                if (data.status){
+                    // 用户名已被注册
+                    $("#id_username").next().text(data.msg).parent().parent().addClass("has-error");
+                }else {
+                    $("#id_username").next().text(data.msg)
+                }
+            }
+        })
+    })
+</script>
+
+</body>
+</html>

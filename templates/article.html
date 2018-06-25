@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block page-main %}
+    <div class="article-detail">
+        <h1>{{ article.title }}</h1>
+        <p>{{ article.articledetail.content|safe }}</p>
+    </div>
+
+    <div id="div_digg" nid="{{ article.nid }}">
+
+        <div class="diggit action">
+            <span class="diggnum" id="digg_count">{{ article.up_count }}</span>
+        </div>
+        <div class="buryit action">
+            <span class="burynum" id="bury_count">{{ article.down_count }}</span>
+        </div>
+        <div class="clear"></div>
+        {% if not request.user.username %}
+         <div><h3 class="panel-title"><a href="/login/">请登录点赞</a></h3></div>
+        {% endif %}
+        <div class="diggword" id="digg_tips" style="color: red;"></div>
+    </div>
+    <div class="panel panel-info" style="clear: both">
+        <h3>评论</h3>
+        {% for comment in comment_list %}
+            <div class="panel-heading">
+                <h3 class="panel-title">#{{ forloop.counter }}楼 {{ comment.user }}-{{ comment.create_time }}</h3>
+                {% if comment.parent_comment_id %}
+                    <h3 class="panel-title">回复<h3
+                            class="panel-title">{{ comment.parent_comment.user }}-{{ comment.parent_comment.content }}</h3>
+                    </h3>
+                {% endif %}
+            </div>
+            <div class="panel-body" comment_id="{{ comment.nid }}">
+                <div>{{ comment.content }}</div>
+                <label for="comment-area" style="float: right" onclick="reply(this);"><a>回复</a></label>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="panel panel-success">
+    {% if request.user.username %}
+        <div class="panel-heading">
+            <h3 class="panel-title">发表评论</h3>
+        </div>
+        <div class="panel-body">
+            <input type="hidden" id="reply_id">
+            <textarea name="content" id="comment-area" cols="90" rows="10"></textarea>
+            <p class="btn-success" id="comment_success"></p>
+            <p><input type="button" value="提交" id="comment-buttom"></p>
+        </div>
+    {% else %}
+        <div class="panel-heading">
+            <h3 class="panel-title"><a href="/login/">请登录评论</a></h3>
+        </div>
+    {% endif %}
+
+    </div>
+
+
+    {% csrf_token %}
+    <script>
+        function reply(ths) {
+            var reply_id = $(ths).parent().attr("comment_id");
+            $("#reply_id").val(reply_id);
+
+        }
+        $("#comment-buttom").click(function () {
+            var content = $(this).parent().prev().prev().val();
+            var parent_comment_id = $(this).parent().prev().prev().prev().prop("value");
+            console.log(parent_comment_id);
+            var article_id = {{ article.nid }};
+            $.ajax({
+                url:"/blog/comment/",
+                type:"post",
+                data:{
+                    "content":content,
+                    "parent_comment_id":parent_comment_id,
+                    "article_id":article_id,
+                    "user_id":{{ request.user.nid }},
+                    "csrfmiddlewaretoken":$("[name='csrfmiddlewaretoken']").val(),
+                },
+                success:function (ret) {
+                    $("#comment_success").text(ret);
+                    $("#comment-area").val("");
+                }
+            })
+        })
+        $("#div_digg").find(".action").click(function () {
+            // 点赞或踩灭
+            var data = {};
+
+            data["is_up"] = $(this).hasClass("diggit");
+            data["article_id"] = $("#div_digg").attr("nid");
+            data["csrfmiddlewaretoken"] = $("[name='csrfmiddlewaretoken']").val();
+            $.ajax({
+                url: "/blog/up_down/",
+                type: "post",
+                data: data,
+                dataType: 'json',
+                success: function (arg) {
+                    if (arg.state) {// 赞或者灭成功
+
+                        if (data["is_up"]) {
+                            var val = $("#digg_count").text();
+                            val = parseInt(val) + 1;
+                            $("#digg_count").text(val);
+                        } else {
+                            var val = $("#bury_count").text();
+                            val = parseInt(val) + 1;
+                            $("#bury_count").text(val);
+                        }
+                    }
+                    else {    // 重复提交
+
+                        if (arg.fisrt_action) {
+                            $("#digg_tips").html("您已经推荐过");
+                        } else {
+                            $("#digg_tips").html("您已经反对过");
+                        }
+                        setTimeout(function () {
+                            $("#digg_tips").html("")
+                        }, 1000)
+                    }
+                }
+            })
+        })
+    </script>
+{% endblock %}
