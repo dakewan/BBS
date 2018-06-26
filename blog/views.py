@@ -47,7 +47,7 @@ def login(request):
 
 
 def index(request):
-    article_list = models.Article.objects.all()
+    article_list = models.Article.objects.all().order_by("-nid")
     return render(request,'index.html',locals())
 
 
@@ -117,7 +117,7 @@ def home(request,site,*args):
     else:
         username = blog.userinfo.username
         user = blog.userinfo
-        article_list = models.Article.objects.filter(user=blog.userinfo)
+        article_list = models.Article.objects.filter(user=blog.userinfo).order_by("-nid")
         return render(request,'blog.html',locals())
 
 
@@ -128,7 +128,7 @@ def tag(request,site,tag):
     else:
         username = blog.userinfo.username
         user = blog.userinfo
-        article_list = models.Article.objects.filter(user=blog.userinfo,article2tag__tag__title=tag)
+        article_list = models.Article.objects.filter(user=blog.userinfo,article2tag__tag__title=tag).order_by("-nid")
         return render(request,'blog.html',locals())
 
 
@@ -139,7 +139,7 @@ def category(request,site,category):
     else:
         username = blog.userinfo.username
         user = blog.userinfo
-        article_list = models.Article.objects.filter(user=user,category__title=category)
+        article_list = models.Article.objects.filter(user=user,category__title=category).order_by("-nid")
         # print(article_list)
         return render(request,'blog.html',locals())
 
@@ -212,3 +212,7 @@ def comment(request):
     models.Article.objects.filter(nid=article_id).update(comment_count=F("comment_count")+1)
     # print(comment)
     return HttpResponse("评论成功")
+
+
+def create(request):
+    return render(request,"blog-create.html",locals())

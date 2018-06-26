@@ -70,12 +70,13 @@
                         <ul class="dropdown-menu">
                             {% if request.user.blog.site %}
                                 <li><a href="/blog/{{ request.user.blog.site }}/">个人博客</a></li>
+                                <li><a href="/blog/create/">写博客</a></li>
                                 {% else %}
                                 <li><a href="/blog-reg/">注册博客</a></li>
                             {% endif %}
 
 
-                            <li><a href="#">Something else here</a></li>
+
                             <li role="separator" class="divider"></li>
                             <li><a href="/logout/">注销</a></li>
                         </ul>

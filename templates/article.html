@@ -31,7 +31,7 @@
                     </h3>
                 {% endif %}
             </div>
-            <div class="panel-body" comment_id="{{ comment.nid }}">
+            <div class="panel-body" comment_id="{{ comment.nid }}" username="{{ comment.user }}">
                 <div>{{ comment.content }}</div>
                 <label for="comment-area" style="float: right" onclick="reply(this);"><a>回复</a></label>
             </div>
@@ -43,7 +43,7 @@
             <h3 class="panel-title">发表评论</h3>
         </div>
         <div class="panel-body">
-            <input type="hidden" id="reply_id">
+            <p class="reply-info" reply_id=""></p>
             <textarea name="content" id="comment-area" cols="90" rows="10"></textarea>
             <p class="btn-success" id="comment_success"></p>
             <p><input type="button" value="提交" id="comment-buttom"></p>
@@ -61,12 +61,15 @@
     <script>
         function reply(ths) {
             var reply_id = $(ths).parent().attr("comment_id");
-            $("#reply_id").val(reply_id);
+            var username = $(ths).parent().attr("username");
+            $(".reply-info").attr("reply_id",reply_id);
+            $(".reply-info").text("@"+username);
+
 
         }
         $("#comment-buttom").click(function () {
             var content = $(this).parent().prev().prev().val();
-            var parent_comment_id = $(this).parent().prev().prev().prev().prop("value");
+            var parent_comment_id = $(".reply-info").attr("reply_id");
             console.log(parent_comment_id);
             var article_id = {{ article.nid }};
             $.ajax({
@@ -82,6 +85,8 @@
                 success:function (ret) {
                     $("#comment_success").text(ret);
                     $("#comment-area").val("");
+                    $(".reply-info").attr("reply_id","");
+                    $(".reply-info").text("");
                 }
             })
         })

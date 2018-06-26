@@ -5,6 +5,8 @@ from blog import views
 
 urlpatterns = [
     # url和下方重复，放在上面比较好
+    path("create/", views.create),
+
     path("up_down/", views.up_down),
     path("comment/", views.comment),
     path('<str:site>/', views.home),

@@ -11,8 +11,8 @@ def get_left_menu(username):
     blog = user.blog
     # 查询文章分类及对应的文章数
     category_list = models.Category.objects.filter(blog=blog).annotate(c=Count("article")).values("title", "c")
-    # blog_list = models.Category.objects.filter(blog=blog)
-    # print(category_list,blog_list,blog)
+    blog_list = models.Category.objects.filter(blog=blog)
+    print(category_list,blog_list,blog)
     # 查文章标签及对应的文章数
     tag_list = models.Tag.objects.filter(blog=blog).annotate(c=Count("article")).values("title", "c")
 
