@@ -11,28 +11,38 @@
 </head>
 <body>
 <div class="container">
-<div class="panel panel-info">
-  <div class="panel-heading">
-    <h3 class="panel-title">编辑文章</h3>
-  </div>
-  <div class="panel-body">
-      <label for="title">文章标题</label>
-      <input type="text" name="title" id="title">
-      <textarea name="content" id="content"></textarea>
-
-  </div>
-</div>
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3 class="panel-title">编辑文章</h3>
+        </div>
+        <div class="panel-body">
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="title">文章标题</label>
+                <input type="text" name="title" id="title">
+                <textarea name="content" id="content"></textarea>
+                <button type="submit">提交文章</button>
+            </form>
+        </div>
+    </div>
 </div>
 <script>
     $(function () {
         initKindEditor();
     });
+
     function initKindEditor() {
         var kind = KindEditor.create('#content', {
             width: '100%',       // 文本框宽度(可以百分比或像素)
             height: '300px',     // 文本框高度(只能像素)
             minWidth: 200,       // 最小宽度（数字）
-            minHeight: 400      // 最小高度（数字）
+            minHeight: 400,      // 最小高度（数字）
+            resizeType: 0,
+            uploadJson: "/upload/",
+            filePostName: "upload_img",
+            extraFileUploadParams: {
+                csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val()
+            },     //添加上csrftoken
         });
     }
 </script>

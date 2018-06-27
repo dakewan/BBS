@@ -5,6 +5,8 @@ from geetest import GeetestLib
 from . import models
 from . import forms
 import json
+import os
+from django.conf import settings
 from django.db.models import F
 # Create your views here.
 
@@ -14,8 +16,6 @@ def login(request):
         ret = {'status': 0, "msg":''}
         username = request.POST.get('username')
         password = request.POST.get('password')
-
-
         # 获取极验 滑动验证码相关的参数
         gt = GeetestLib(pc_geetest_id, pc_geetest_key)
         challenge = request.POST.get(gt.FN_CHALLENGE, '')
@@ -215,4 +215,33 @@ def comment(request):
 
 
 def create(request):
-    return render(request,"blog-create.html",locals())
+    if request.method == "POST":
+        title = request.POST.get('title')
+        article_content = request.POST.get('content')
+        user = request.user
+        from bs4 import BeautifulSoup
+        bs = BeautifulSoup(article_content, "html.parser")
+        desc = bs.text[0:150] + "..."
+        # 过滤非法标签
+        for tag in bs.find_all():
+            if tag.name in ["script", "link"]:
+                tag.decompose()
+        article_obj = models.Article.objects.create(user=user, title=title, desc=desc)
+        models.ArticleDetail.objects.create(content=str(bs), article=article_obj)
+        return HttpResponse("添加成功")
+    return render(request, "blog-create.html")
+
+
+def upload(request):
+    print(request.FILES)
+    obj = request.FILES.get("upload_img")
+    print("name", obj.name)
+    path = os.path.join(settings.MEDIA_ROOT, "add_article_img", obj.name)
+    with open(path, "wb") as f:
+        for line in obj:
+            f.write(line)
+    res = {
+        "error": 0,
+        "url": "/media/add_article_img/" + obj.name
+    }
+    return HttpResponse(json.dumps(res))
