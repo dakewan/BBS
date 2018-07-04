@@ -83,9 +83,7 @@ class RegForm(forms.Form):
 
         if re_password and re_password != password:
             self.add_error("re_password", ValidationError("两次密码不一致"))
-
         else:
-
             return self.cleaned_data
 
 

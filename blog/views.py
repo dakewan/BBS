@@ -1,4 +1,4 @@
-from django.shortcuts import render,HttpResponse,redirect
+from django.shortcuts import render, HttpResponse, redirect
 from django.contrib import auth
 from django.http import JsonResponse
 from geetest import GeetestLib
@@ -8,12 +8,14 @@ import json
 import os
 from django.conf import settings
 from django.db.models import F
+
+
 # Create your views here.
 
 
 def login(request):
     if request.method == 'POST':
-        ret = {'status': 0, "msg":''}
+        ret = {'status': 0, "msg": ''}
         username = request.POST.get('username')
         password = request.POST.get('password')
         # 获取极验 滑动验证码相关的参数
@@ -42,13 +44,12 @@ def login(request):
                 ret["msg"] = "用户名或密码错误！"
             return JsonResponse(ret)
     else:
-        return render(request,'login.html',)
-
+        return render(request, 'login.html', )
 
 
 def index(request):
     article_list = models.Article.objects.all().order_by("-nid")
-    return render(request,'index.html',locals())
+    return render(request, 'index.html', locals())
 
 
 def logout(request):
@@ -73,7 +74,7 @@ def get_geetest(request):
 
 
 def register(request):
-    if request.method=="POST":
+    if request.method == "POST":
         print(request.POST)
         ret = {"status": 0, "msg": ""}
         form_obj = forms.RegForm(request.POST)
@@ -95,6 +96,7 @@ def register(request):
     form_obj = forms.RegForm()
     return render(request, 'register.html', locals())
 
+
 def check_username_exist(request):
     ret = {'status': 0, 'msg': ''}
     username = request.GET.get('username')
@@ -108,7 +110,7 @@ def check_username_exist(request):
     return JsonResponse(ret)
 
 
-def home(request,site,*args):
+def home(request, site, *args):
     # print(site,args)
     blog = models.Blog.objects.filter(site=site).first()
 
@@ -118,41 +120,41 @@ def home(request,site,*args):
         username = blog.userinfo.username
         user = blog.userinfo
         article_list = models.Article.objects.filter(user=blog.userinfo).order_by("-nid")
-        return render(request,'blog.html',locals())
+        return render(request, 'blog.html', locals())
 
 
-def tag(request,site,tag):
+def tag(request, site, tag):
     blog = models.Blog.objects.filter(site=site).first()
     if not blog:
         return HttpResponse("404")
     else:
         username = blog.userinfo.username
         user = blog.userinfo
-        article_list = models.Article.objects.filter(user=blog.userinfo,article2tag__tag__title=tag).order_by("-nid")
-        return render(request,'blog.html',locals())
+        article_list = models.Article.objects.filter(user=blog.userinfo, article2tag__tag__title=tag).order_by("-nid")
+        return render(request, 'blog.html', locals())
 
 
-def category(request,site,category):
+def category(request, site, category):
     blog = models.Blog.objects.filter(site=site).first()
     if not blog:
         return HttpResponse("404")
     else:
         username = blog.userinfo.username
         user = blog.userinfo
-        article_list = models.Article.objects.filter(user=user,category__title=category).order_by("-nid")
+        article_list = models.Article.objects.filter(user=user, category__title=category).order_by("-nid")
         # print(article_list)
-        return render(request,'blog.html',locals())
+        return render(request, 'blog.html', locals())
 
 
-def article(request,site,article_id):
+def article(request, site, article_id):
     blog = models.Blog.objects.filter(site=site).first()
     if blog:
         username = blog.userinfo.username
         user = blog.userinfo
-        article = models.Article.objects.filter(nid=article_id,user=user).first()
+        article = models.Article.objects.filter(nid=article_id, user=user).first()
         comment_list = models.Comment.objects.filter(article=article)
         if article:
-            return render(request,'article.html',locals())
+            return render(request, 'article.html', locals())
         else:
             return HttpResponse("404")
     else:
@@ -177,7 +179,7 @@ def blog_reg(request):
 
     blog_form = forms.BlogForm()
 
-    return render(request,"blog-reg.html",locals())
+    return render(request, "blog-reg.html", locals())
 
 
 def up_down(request):
@@ -197,8 +199,6 @@ def up_down(request):
 
 
 def comment(request):
-    # print(request.POST)
-    # {'content': ['hhhhhhhh'], 'parent_comment_id': [''], 'article_id': ['1'], 'user_id': ['1'],
     content = request.POST.get("content")
     parent_comment_id = request.POST.get("parent_comment_id")
     article_id = request.POST.get("article_id")
@@ -209,7 +209,7 @@ def comment(request):
         article_id=article_id,
         user_id=user_id
     )
-    models.Article.objects.filter(nid=article_id).update(comment_count=F("comment_count")+1)
+    models.Article.objects.filter(nid=article_id).update(comment_count=F("comment_count") + 1)
     # print(comment)
     return HttpResponse("评论成功")
 
